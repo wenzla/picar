@@ -1,5 +1,9 @@
 import numpy as np
 import math
+from queue import PriorityQueue
+
+
+#################### MAPPING FUNCTIONS ####################
 
 def check_way(p1,p2):
     dec0=False
@@ -91,8 +95,7 @@ def make_safety_zone(x,y,mapping):
     
     return mapping
 
-
-# !USAGE BELOW
+# *USAGE BELOW
 # test = [26.9,26.93,27.26, 26.88, 27.72, 29.26, 42.37, 41.93, 42.47, 41.78, 42.67, 43.66, -2]
 # angles = np.deg2rad(np.arange(-60,70,10)) #in radians
 # xvals = (np.round((np.sin(angles) * test)/5, 0)+14).astype(int)
@@ -103,3 +106,111 @@ def make_safety_zone(x,y,mapping):
 # #         print(pair[0],pair[1])
 #         mapping[pair[0]][pair[1]] = 1
 #         mapping = make_safety_zone(pair[0],pair[1],mapping)
+
+
+#################### ROUTING FUNCTIONS ####################
+
+def _get_north(point):
+    x, y = point
+    return (x-1,y)
+
+def _get_south(point):
+    x, y = point
+    return (x+1,y)
+
+def _get_east(point):
+    x, y = point
+    return (x,y+1)
+
+def _get_west(point):
+    x, y = point
+    return (x,y-1)
+
+def _get_city_neighbor(point, xmax, ymax):
+    x, y = point
+    neighbors = []
+    
+    if x == 0:
+        neighbors.append(_get_south(point))
+    elif x == (xmax-1):
+        neighbors.append(_get_north(point))
+    else:
+        neighbors.append(_get_south(point))
+        neighbors.append(_get_north(point))
+    
+    if y == 0:
+        neighbors.append(_get_east(point))
+    elif y == (ymax-1):
+        neighbors.append(_get_west(point))
+    else:
+        neighbors.append(_get_east(point))
+        neighbors.append(_get_west(point))
+        
+    return neighbors
+    
+def get_neighbors(point, mapping):
+
+    xmax, ymax = mapping.shape
+    neighbors = _get_city_neighbor(point, xmax, ymax)
+    
+    weights = []
+    for n in (neighbors):
+        map_weight = mapping[n[0]][n[1]]
+        if map_weight == 0:
+            weights.append(1)
+        else: #obstacle
+            weights.append(999) 
+    
+    return neighbors, weights
+
+def heuristic(start, goal): 
+    x1, y1 = start
+    x2, y2 = goal
+    return abs(x1 - x2) + abs(y1 - y2)
+
+# code below based off of https://www.redblobgames.com/pathfinding/a-star/implementation.html#python-astar
+def a_star(start, goal, mapping):
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
+    path = {}
+    running_cost = {}
+    
+    path[start] = None
+    running_cost[start] = 0
+    
+    while frontier.qsize() > 0:
+        current = frontier.get()
+        
+        if current == goal:
+            break
+        
+        neighbors, costs = get_neighbors(current, mapping)
+        
+        for i, nxt in enumerate(neighbors):
+            cost = costs[i]
+            new_cost = running_cost[current] + cost
+            if (nxt not in path) or (new_cost < running_cost[nxt]):
+                running_cost[nxt] = new_cost
+                priority = new_cost + heuristic(nxt, goal)
+                frontier.put(nxt, priority)
+                path[nxt] = current  
+    
+    return path, running_cost    
+
+def make_route(path, start, goal, route=[]):
+    prev = path[goal]
+    route.append(prev)
+    
+    if prev == start:
+        return route
+    else:    
+        route = make_route(path, start, prev, route)
+        return route
+
+# *USAGE BELOW
+# start = (0,14)
+# goal = (20,14)
+# path, cost_so_far = a_star(start, goal, mapping)
+# route = make_route(path, start, goal)
+# route.reverse()
+# route.append(goal)
