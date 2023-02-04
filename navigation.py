@@ -1,6 +1,8 @@
 import numpy as np
 import math
 from queue import PriorityQueue
+from functools import partial
+from car import left_turn, right_turn, forward_step, backward_step
 
 
 #################### MAPPING FUNCTIONS ####################
@@ -72,8 +74,11 @@ def make_scan_list(possible):
     for i in range(len(temp)-1):
         scan_list.append(temp[i])
         
-        for path in get_manhattan(temp[i], temp[i+1]):
-            scan_list.append(path)
+        manhat = get_manhattan(temp[i], temp[i+1])
+        
+        if manhat is not None:
+            for path in manhat:
+                scan_list.append(path)
         
     scan_list.append(temp[-1])
     
@@ -214,3 +219,121 @@ def make_route(path, start, goal, route=[]):
 # route = make_route(path, start, goal)
 # route.reverse()
 # route.append(goal)
+
+#################### INSTRUCTION FUNCTIONS ####################
+
+def generate_instructions(route, start):
+    lastx, lasty = start
+    direction = 's'
+
+    instructions = []
+    for r in route[1:]:
+        rx, ry = r
+        if lastx == rx: #moving east-west
+            if direction == 's':
+                if lasty < ry:
+                    instructions.append('right')
+                    instructions.append('forward')
+                    direction = 'w'
+                else:
+                    instructions.append('left')
+                    instructions.append('forward')
+                    direction = 'e'
+            elif direction == 'n':
+                if lasty < ry:
+                    instructions.append('left')
+                    instructions.append('forward')
+                    direction = 'w'
+                else:
+                    instructions.append('right')
+                    instructions.append('forward')
+                    direction = 'e'
+            elif direction == 'e':
+                if lasty < ry:
+                    instructions.append('reverse')
+                    direction = 'e'
+                else:
+                    instructions.append('forward')
+                    direction = 'e'
+            else: #direction == 'w'
+                if lasty < ry:
+                    instructions.append('forward')
+                    direction = 'w'
+                else:
+                    instructions.append('reverse')
+                    direction = 'w'
+        else: #lasty == ry; moving north-south
+            if direction == 's':
+                if lastx < rx:
+                    instructions.append('forward')
+                    direction = 's'
+                else:
+                    instructions.append('reverse')
+                    direction = 's'
+            elif direction == 'n':
+                if lastx < rx:
+                    instructions.append('reverse')
+                    direction = 'n'
+                else:
+                    instructions.append('forward')
+                    direction = 'n'
+            elif direction == 'e':
+                if lastx < rx:
+                    instructions.append('right')
+                    instructions.append('forward')
+                    direction = 's'
+                else:
+                    instructions.append('left')
+                    instructions.append('forward')
+                    direction = 'n'
+            else: #direction == 'w'
+                if lastx < rx:
+                    instructions.append('left')
+                    instructions.append('forward')
+                    direction = 's'
+                else:
+                    instructions.append('right')
+                    instructions.append('forward')
+                    direction = 'n'
+    #     print(rx, ry, direction)
+
+        lastx, lasty = rx, ry
+    return instructions
+
+def generate_movements(instructions):
+    instruction_list = []
+    last_inst = None
+    dummy=None
+    stepper = 1
+
+    for inst in instructions:
+        if inst == 'left':
+            if last_inst == 'forward':
+                instruction_list.append(partial(forward_step, stepper))
+                instruction_list.append(partial(left_turn, dummy))
+                stepper = 1
+            else:
+                instruction_list.append(partial(left_turn, dummy))
+        elif inst == 'right':
+            if last_inst == 'forward':
+                instruction_list.append(partial(forward_step, stepper))
+                instruction_list.append(partial(right_turn, dummy))
+                stepper = 1
+            else:
+                instruction_list.append(partial(right_turn, dummy))
+        elif inst == 'forward':
+            if last_inst == 'forward':
+                stepper += 1           
+        else: #reverse should never happen with my current obstacle course
+            None
+        last_inst = inst
+
+    if last_inst == 'forward':
+        instruction_list.append(partial(forward_step, stepper))  
+    return instruction_list
+    
+# *USAGE BELOW
+# instructions = generate_instructions(route, start)
+# generate_movements(instructions)
+# for il in instruction_list:
+#     il()
