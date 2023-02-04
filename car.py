@@ -44,19 +44,19 @@ def us_sweep(step_size=10 ,max_angle=60, min_angle=-60):
         # print(angle_to_set, dist)
     return dists
 
-def left_turn(): #90 degree turn
+def left_turn(dummy=None): #90 degree turn
     fc.turn_left(50)
-    time.sleep(1.05)
+    time.sleep(0.9)
     fc.stop()
     
-def right_turn(): #90 degree turn; for some reason behavior different from left turn??
-    fc.turn_right(40)
+def right_turn(dummy=None): #90 degree turn; for some reason behavior different from left turn??
+    fc.turn_right(30)
     time.sleep(0.95)
     fc.stop()
     
 def forward_step(step=1): #moves forward 5cm * step
-    fc.forward(10)
-    time.sleep((0.25)*step)
+    fc.forward(20)
+    time.sleep((0.3)*step)
     fc.stop()
     
 def backward_step(step=1): #moves backward 5cm * step

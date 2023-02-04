@@ -86,17 +86,22 @@ def make_scan_list(possible):
 
 def make_safety_zone(x,y,mapping):
 
-    mapping[x-1][y-1] = 1
-    mapping[x-1][y] = 1
-    mapping[x-1][y+1] = 1
+    if x-1 >= 0:
+        mapping[x-1][y-1] = 1
+        mapping[x-1][y] = 1
+        if y+1 < 30:
+            mapping[x-1][y+1] = 1
     
     mapping[x][y-1] = 1
     mapping[x][y] = 1
-    mapping[x][y+1] = 1
+    if y+1 < 30:
+        mapping[x][y+1] = 1
     
-    mapping[x+1][y-1] = 1
-    mapping[x+1][y] = 1
-    mapping[x+1][y+1] = 1
+    if x+1 < 30:
+        mapping[x+1][y-1] = 1
+        mapping[x+1][y] = 1
+        if y+1 < 30:
+            mapping[x+1][y+1] = 1
     
     return mapping
 
@@ -232,13 +237,13 @@ def generate_instructions(route, start):
         if lastx == rx: #moving east-west
             if direction == 's':
                 if lasty < ry:
-                    instructions.append('right')
-                    instructions.append('forward')
-                    direction = 'w'
-                else:
                     instructions.append('left')
                     instructions.append('forward')
                     direction = 'e'
+                else:
+                    instructions.append('right')
+                    instructions.append('forward')
+                    direction = 'w'
             elif direction == 'n':
                 if lasty < ry:
                     instructions.append('left')
@@ -250,17 +255,17 @@ def generate_instructions(route, start):
                     direction = 'e'
             elif direction == 'e':
                 if lasty < ry:
-                    instructions.append('reverse')
+                    instructions.append('forward')
                     direction = 'e'
                 else:
-                    instructions.append('forward')
+                    instructions.append('reverse')
                     direction = 'e'
             else: #direction == 'w'
                 if lasty < ry:
-                    instructions.append('forward')
+                    instructions.append('reverse')
                     direction = 'w'
                 else:
-                    instructions.append('reverse')
+                    instructions.append('forward')
                     direction = 'w'
         else: #lasty == ry; moving north-south
             if direction == 's':
