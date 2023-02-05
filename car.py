@@ -50,8 +50,9 @@ def left_turn(dummy=None): #90 degree turn
     fc.stop()
     
 def right_turn(dummy=None): #90 degree turn; for some reason behavior different from left turn??
-    fc.turn_right(30)
-    time.sleep(0.95)
+    # always will change, even when running twice in a row with same numbers, it has different behavior
+    fc.turn_right(40)
+    time.sleep(0.91)
     fc.stop()
     
 def forward_step(step=1): #moves forward 5cm * step
