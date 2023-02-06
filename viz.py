@@ -46,7 +46,7 @@ def parse_detects(detects):
         if detect == 'stop sign':
             stop_car()
             print('stopping')
-            time.sleep(1)
+            time.sleep(3)
         elif detect == 'traffic cone':
             return True
         else:

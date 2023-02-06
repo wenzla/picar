@@ -40,11 +40,13 @@ for mov in moves:
     mov()
     detects = (get_detect(cap))
     if parse_detects(detects):
-        break #rescan because of traffic cone
+        break #stop movements because of traffic cone
 
 car.left_turn() #left turn to align car
 
-goal = (12,20)
+################## Second phase of the navigation ##################
+
+goal = (12,21)
 mapping = np.zeros([30,30], dtype='int')
 mapping[start] = 9
 mapping[goal] = 9
@@ -52,7 +54,6 @@ mapping[goal] = 9
 angles = np.deg2rad(np.arange(-60,70,10)) #in radians
 xvals = (np.round((np.sin(angles) * sweep)/5, 0)+14).astype(int)
 yvals = ((np.cos(angles) * sweep)//5).astype(int)
-
 
 scan_list = make_scan_list(list(zip(yvals, xvals))) 
 for pair in scan_list:

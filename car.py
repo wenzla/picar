@@ -49,8 +49,7 @@ def left_turn(dummy=None): #90 degree turn
     time.sleep(0.9)
     fc.stop()
     
-def right_turn(dummy=None): #90 degree turn; for some reason behavior different from left turn??
-    # always will change, even when running twice in a row with same numbers, it has different behavior
+def right_turn(dummy=None): #90 degree turn; for some reason behavior different from left turn
     fc.turn_right(40)
     time.sleep(0.91)
     fc.stop()
